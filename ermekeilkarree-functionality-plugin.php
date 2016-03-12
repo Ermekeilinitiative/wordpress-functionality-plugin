@@ -47,6 +47,75 @@ function global_menu_filter($output, $args) {
 // See http://codex.wordpress.org/Function_Reference/add_filter for priority and accepted_args.
 add_filter('pre_wp_nav_menu', 'global_menu_filter', 10, 2);
 
+
+function long_description_callback() {
+    $option = get_option('blog_long_description');
+
+    echo "<textarea id='blog_long_description' name='blog_long_description' ".
+            "rows='5' cols='80'>{$option}</textarea>";
+}
+
+function cover_image_callback() {
+    $option = get_option('blog_cover_image');
+
+    if($option) {
+        $img = wp_get_attachment_image($option);
+        echo "<div>{$img}</div>";
+    }
+    echo "<input id='blog_cover_image' name='blog_cover_image' size='40' type='text' value='{$option}' />";
+
+    if (!function_exists('media_buttons')) {
+        include(ABSPATH . 'wp-admin/includes/media.php');
+    }
+
+    echo '<span id="blog-cover-image-media-buttons" class="wp-media-buttons">';
+    /**
+     * Fires after the default media button(s) are displayed.
+     *
+     * @since 2.5.0
+     *
+     * @param string $editor_id Unique editor identifier, e.g. 'content'.
+     */
+    do_action('media_buttons', 'blog_cover_image');
+    echo "</span>\n";
+}
+
+function cover_image_filter($html, $id, $attachment) {
+    if($_POST && array_key_exists('post_id', $_POST) && $_POST['post_id'] == 0) {
+        // The post_id will be zero if we are not editing a real post. We assume,
+        // this means that we are in our settings field for the cover image.
+        // TODO: see
+        //   - https://github.com/WordPress/WordPress/blob/master/wp-admin/custom-background.php
+        //   - https://github.com/WordPress/WordPress/blob/master/wp-admin/js/custom-background.js
+        // on how to use the media library in the "right" way.
+        return $id;
+    } else {
+        return $html;
+    }
+}
+add_filter('media_send_to_editor', 'cover_image_filter', 10, 3);
+
+function init_blog_settings() {
+    // Add fields with name and function to use for our extra settings
+    add_settings_field(
+            'blog_long_description',
+            'Längere Beschreibung',
+            'long_description_callback',
+            'general' );
+
+    add_settings_field(
+            'blog_cover_image',
+            'Cover Bild',
+            'cover_image_callback',
+            'general' );
+
+    // Register our setting so that $_POST handling is done for us and our
+    // callback function just has to echo the form HTML
+    register_setting('general', 'blog_long_description');
+    register_setting('general', 'blog_cover_image');
+}
+add_action('admin_init', 'init_blog_settings');
+
 // Use template multisite_front_page.php if available to display the network's front page!
 function front_page_filter($template) {
     if(is_main_site() && is_front_page()) {
