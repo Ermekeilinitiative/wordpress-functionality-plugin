@@ -2,7 +2,7 @@
 /*
    Plugin Name: Ermekeilkarree Functionality Plugin
    Description: Plugin for site ermekeilkarree.de offering functionality that is independent from themes. Activate this plugin for the whole multisite network to make at an integral part of the network.
-   Version: 0.2
+   Version: 0.3
    License: MIT
    Author: Daniel Appelt
    Author URI: https://github.com/danielappelt
@@ -26,6 +26,10 @@ function global_nav_menu_init() {
 add_action('admin_init', 'global_nav_menu_init');
 add_action('start_previewing_theme', 'global_nav_menu_init');
 
+/*
+   Inject the 'global' navigation menu defined for the network's main site also
+   as 'global' menu for other sites on the network.
+ */
 function global_menu_filter($output, $args) {
     // This is the current network's information; 'site' is old terminology.
     global $current_site;
@@ -56,4 +60,23 @@ function front_page_filter($template) {
 }
 // See http://codex.wordpress.org/Plugin_API/Filter_Reference/template_include
 add_filter('template_include', 'front_page_filter');
+
+# Add two log actions which allow us to temporarely block spammers via fail2ban
+# See http://www.scottbrownconsulting.com/2014/09/countering-wordpress-xml-rpc-attacks-with-fail2ban/
+function fail2ban_login_failed_hook($username) {
+//    openlog('wordpress('.$_SERVER['HTTP_HOST'].')', LOG_NDELAY|LOG_PID, LOG_AUTHPRIV);
+    openlog('wordpress', LOG_NDELAY|LOG_PID, LOG_AUTHPRIV);
+    syslog(LOG_NOTICE,"Authentication failure for ".$username." from ".$_SERVER['REMOTE_ADDR']);
+}
+add_action('wp_login_failed', 'fail2ban_login_failed_hook');
+
+function fail2ban_pingback_error_hook($ixr_error) {
+    if ( $ixr_error->code === 48 ) return $ixr_error; // don't punish duplication
+
+//    openlog('wordpress('.$_SERVER['HTTP_HOST'].')', LOG_NDELAY|LOG_PID, LOG_AUTHPRIV);
+    openlog('wordpress', LOG_NDELAY|LOG_PID, LOG_AUTHPRIV);
+    syslog(LOG_NOTICE,"Pingback error ".$ixr_error->code." generated from ".$_SERVER['REMOTE_ADDR']);
+    return $ixr_error;
+}
+add_filter('xmlrpc_pingback_error', 'fail2ban_pingback_error_hook', 1);
 ?>

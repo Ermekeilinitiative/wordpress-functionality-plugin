@@ -10,6 +10,9 @@ This plugin should be activated for the whole multisite network in order to make
 
 ## Changelog
 
+### 0.3
+* Add two log actions which allow us to temporarely block spammers via fail2ban
+
 ### 0.2
 * Register a global menu across the network which may only be customized from the main site.
 
