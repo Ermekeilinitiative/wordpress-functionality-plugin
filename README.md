@@ -10,6 +10,11 @@ This plugin should be activated for the whole multisite network in order to make
 
 ## Changelog
 
+### 0.4.0
+* Add blog settings for "long description" and "cover image" using the Settings API
+* Add a function to retrieve latest posts across the network
+* Switch to semantic versioning (http://semver.org/)
+
 ### 0.3
 * Add two log actions which allow us to temporarely block spammers via fail2ban
 

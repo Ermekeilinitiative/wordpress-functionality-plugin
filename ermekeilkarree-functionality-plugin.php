@@ -2,14 +2,14 @@
 /*
    Plugin Name: Ermekeilkarree Functionality Plugin
    Description: Plugin for site ermekeilkarree.de offering functionality that is independent from themes. Activate this plugin for the whole multisite network to make at an integral part of the network.
-   Version: 0.3
+   Version: 0.4.0
    License: MIT
    Author: Daniel Appelt
    Author URI: https://github.com/danielappelt
    See also: http://wpcandy.com/teaches/how-to-create-a-functionality-plugin/
  */
 
-/* 
+/*
    Register a global menu across the network.
 
    See http://wpmututorials.com/plugins/add-a-global-menu-to-your-network/
@@ -115,6 +115,40 @@ function init_blog_settings() {
     register_setting('general', 'blog_cover_image');
 }
 add_action('admin_init', 'init_blog_settings');
+
+// TODO: maybe use a transient to save the result
+// See also https://github.com/wp-plugins/network-summary/blob/master/includes/class-network-summary.php
+function get_posts_for_sites(array $sites, $limit) {
+    $result = array();
+
+    if ( empty( $sites ) ) {
+        return $result;
+    }
+
+    function sort_by_post_date( $a, $b ) {
+        return strtotime( $b->post_date_gmt ) - strtotime( $a->post_date_gmt );
+    }
+
+    # By default get_posts() will retrieve the 5 latest posts. In order to get
+    # correct results, we need to retrieve $limit posts from every blog.
+    $post_params = array('numberposts' => $limit);
+
+    foreach ( $sites as $site ) {
+        $site = (object)$site;
+        switch_to_blog( $site->blog_id );
+
+        foreach ( get_posts($post_params) as $post ) {
+            $post->site_id = $site->blog_id;
+            array_push( $result, $post );
+        }
+        restore_current_blog();
+
+        usort( $result, 'sort_by_post_date' );
+        $result = array_slice( $result, 0, $limit );
+    }
+
+    return $result;
+}
 
 // Use template multisite_front_page.php if available to display the network's front page!
 function front_page_filter($template) {
