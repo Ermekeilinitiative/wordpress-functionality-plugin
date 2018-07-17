@@ -10,6 +10,11 @@ This plugin should be activated for the whole multisite network in order to make
 
 ## Changelog
 
+### 0.5.0
+* Add a custom post type to display alerts on the front page
+* Add a function to retrieve garden opening times from Events Manager plugin
+* Put footer and mobile-nav menu under network control
+
 ### 0.4.0
 * Add blog settings for "long description" and "cover image" using the Settings API
 * Add a function to retrieve latest posts across the network
