@@ -61,6 +61,10 @@ register_nav_menu( 'site', 'Site Menu' );
 
 /*
     Create a custom post type to handle custom alerts to be placed on the front page.
+    TODO: Maybe it's easier to just use a plugin for this. For example:
+    https://wordpress.org/plugins/custom-post-type-ui/
+    https://wordpress.org/plugins/pods/
+    https://github.com/wpmetabox/mb-custom-post-type
 */
 function create_custom_post_alert() {
     $labels = array(
@@ -92,6 +96,9 @@ function create_custom_post_alert() {
 }
 add_action( 'init', 'create_custom_post_alert' );
 
+/*
+  Reduce alert columns to relevant entries.
+ */
 function edit_alert_columns( $columns ) {
     $columns = array(
             'cb' => '<input type="checkbox" />',
@@ -204,6 +211,14 @@ function get_garden_opening() {
     return $result;
 }
 
+/*
+  Add long description and cover image settings for blogs. These will be
+  displayed on the respective front pages as well as on the network front
+  page's sub site selection.
+  TODO: Maybe it's easier to just use a plugin for this. For example:
+  https://github.com/CMB2/CMB2
+  https://metabox.io/
+ */
 function long_description_callback() {
     $option = get_option('blog_long_description');
 
