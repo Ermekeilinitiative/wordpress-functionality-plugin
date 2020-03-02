@@ -9,6 +9,25 @@
    See also: http://wpcandy.com/teaches/how-to-create-a-functionality-plugin/
  */
 
+// function custom_get_bloginfo($output, $show) {
+//     if($show === 'name' && strrpos($output, "e.V.") !== false) {
+//         $output = substr($output, 0, -4) . "<span>e.V.</span>";
+//     }
+
+//     return $output;
+// }
+// add_filter('bloginfo', 'custom_get_bloginfo', 10, 2);
+
+function get_global_title() {
+    $title = get_bloginfo();
+
+    if(strrpos($title, "e.V.") !== false) {
+        $title = substr($title, 0, -4) . "<span>e.V.</span>";
+    }
+
+    return $title;
+}
+
 /*
    Register global menu locations for navigation and footer that appear across the network.
 
@@ -53,6 +72,16 @@ function global_menu_filter($output, $args) {
 }
 // See http://codex.wordpress.org/Function_Reference/add_filter for priority and accepted_args.
 add_filter('pre_wp_nav_menu', 'global_menu_filter', 10, 2);
+
+// TODO: this does not work yet. Close offCanvas WHEN following #<id> links
+function add_close_to_mobile_nav_anchors( $atts, $item, $args, $depth ) {
+    if($args->theme_location === 'mobile-nav') {
+        $atts['data-close'] = 'offCanvas';
+    }
+    return $atts;
+}
+add_filter( 'nav_menu_link_attributes', 'add_close_to_mobile_nav_anchors', 10, 4 );
+
 
 /*
     Register another menu which might be used on each blog to add sub site navigation.
